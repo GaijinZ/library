@@ -1,0 +1,51 @@
+syntax = "proto3";
+package protobuff;
+
+option go_package = "./protobuff";
+
+message Book {
+    int32 uid = 1;
+    string title = 2;
+    repeated Author authors = 3;
+    string category = 4;
+    string published = 5;
+}
+
+message Author {
+    string FirstName = 1;
+    string LastName = 2;
+}
+
+message GetAllBooksRequest {}
+
+message AddBookRequest {
+    Book book = 1;
+}
+
+message AddBookResponse {
+    Book book = 1;
+}
+
+message EditBookRequest {
+    Book book = 1;
+}
+
+message GetBookRequest {
+    int32 uid = 1;
+}
+
+message DeleteBookRequest {
+    int32 uid = 1;
+}
+
+message DeleteBookResponse {
+    bool success = 1;
+}
+
+service Library {
+    rpc AddBook(AddBookRequest) returns (AddBookResponse);
+    rpc EditBook(EditBookRequest) returns (Book);
+    rpc GetBook(GetBookRequest) returns (Book);
+    rpc DeleteBook(DeleteBookRequest) returns (DeleteBookResponse);
+    rpc GetAllBooks(GetAllBooksRequest) returns (stream Book);
+}
