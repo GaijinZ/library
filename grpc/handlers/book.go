@@ -15,10 +15,12 @@ type BookServer struct {
 	protobuff.UnimplementedLibraryServer
 }
 
-var Books []*protobuff.Book
+var books []*protobuff.Book
+var book redisdb.Books
+var redis redisdb.Redis = book
 
 func marshallBooks(books []*protobuff.Book) []byte {
-	json, err := json.Marshal(Books)
+	json, err := json.Marshal(books)
 
 	if err != nil {
 		log.Fatalf("Cant marshall books %v", err)
@@ -28,7 +30,7 @@ func marshallBooks(books []*protobuff.Book) []byte {
 }
 
 func (b *BookServer) GetAllBooks(in *protobuff.GetAllBooksRequest, stream protobuff.Library_GetAllBooksServer) error {
-	for _, book := range Books {
+	for _, book := range books {
 		if err := stream.Send(book); err != nil {
 			return err
 		}
@@ -38,10 +40,10 @@ func (b *BookServer) GetAllBooks(in *protobuff.GetAllBooksRequest, stream protob
 }
 
 func (b *BookServer) GetBook(ctx context.Context, in *protobuff.GetBookRequest) (*protobuff.Book, error) {
-	for _, book := range Books {
+	for _, book := range books {
 		if book.GetUid() == in.GetUid() {
 			log.Printf("Recived: %v", in.Uid)
-			redisdb.GetFromRedisDB(fmt.Sprintf("%v", in.Uid))
+			redis.Get(fmt.Sprintf("%v", in.Uid))
 			return book, nil
 		}
 	}
@@ -49,27 +51,27 @@ func (b *BookServer) GetBook(ctx context.Context, in *protobuff.GetBookRequest) 
 	return nil, errors.New("book not found")
 }
 
-func (s *BookServer) AddBook(ctx context.Context, in *protobuff.AddBookRequest) (*protobuff.AddBookResponse, error) {
+func (b *BookServer) AddBook(ctx context.Context, in *protobuff.AddBookRequest) (*protobuff.AddBookResponse, error) {
 	res := in.GetBook()
-	Books = append(Books, res)
+	books = append(books, res)
 
-	json := marshallBooks(Books)
-	redisdb.AddToRedisDB(fmt.Sprintf("%v", res.Uid), json)
+	json := marshallBooks(books)
+	redis.Set(fmt.Sprintf("%v", res.Uid), json)
 
 	return &protobuff.AddBookResponse{}, nil
 }
 
-func (s *BookServer) EditBook(ctx context.Context, in *protobuff.EditBookRequest) (*protobuff.Book, error) {
+func (b *BookServer) EditBook(ctx context.Context, in *protobuff.EditBookRequest) (*protobuff.Book, error) {
 	res := in.GetBook()
 
-	for index, book := range Books {
+	for index, book := range books {
 		if book.GetUid() == res.GetUid() {
-			Books = append(Books[:index], Books[index+1:]...)
+			books = append(books[:index], books[index+1:]...)
 			res.Uid = book.GetUid()
-			Books = append(Books, res)
+			books = append(books, res)
 
-			json := marshallBooks(Books)
-			redisdb.AddToRedisDB(fmt.Sprintf("%v", res.Uid), json)
+			json := marshallBooks(books)
+			redis.Set(fmt.Sprintf("%v", res.Uid), json)
 			return res, nil
 		}
 	}
@@ -77,18 +79,18 @@ func (s *BookServer) EditBook(ctx context.Context, in *protobuff.EditBookRequest
 	return res, nil
 }
 
-func (s *BookServer) DeleteBook(ctx context.Context, in *protobuff.DeleteBookRequest) (*protobuff.DeleteBookResponse, error) {
+func (b *BookServer) DeleteBook(ctx context.Context, in *protobuff.DeleteBookRequest) (*protobuff.DeleteBookResponse, error) {
 	res := &protobuff.DeleteBookResponse{}
 
-	for index, book := range Books {
+	for index, book := range books {
 		if book.GetUid() == in.GetUid() {
-			Books = append(Books[:index], Books[index+1:]...)
+			books = append(books[:index], books[index+1:]...)
 			res.Success = true
 			break
 		}
 	}
 
-	redisdb.DeleteFromRedisDB(fmt.Sprintf("%v", in.Uid))
+	redis.Delete(fmt.Sprintf("%v", in.Uid))
 
 	return res, nil
 }
