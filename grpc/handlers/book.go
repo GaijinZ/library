@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/GaijinZ/grpc/protobuff"
-	"github.com/GaijinZ/grpc/redis"
+	"github.com/GaijinZ/grpc/redisdb"
 )
 
 type BookServer struct {
@@ -41,7 +41,7 @@ func (b *BookServer) GetBook(ctx context.Context, in *protobuff.GetBookRequest) 
 	for _, book := range Books {
 		if book.GetUid() == in.GetUid() {
 			log.Printf("Recived: %v", in.Uid)
-			redis.GetFromRedisDB(fmt.Sprintf("%v", in.Uid))
+			redisdb.GetFromRedisDB(fmt.Sprintf("%v", in.Uid))
 			return book, nil
 		}
 	}
@@ -54,7 +54,7 @@ func (s *BookServer) AddBook(ctx context.Context, in *protobuff.AddBookRequest) 
 	Books = append(Books, res)
 
 	json := marshallBooks(Books)
-	redis.AddToRedisDB(fmt.Sprintf("%v", res.Uid), json)
+	redisdb.AddToRedisDB(fmt.Sprintf("%v", res.Uid), json)
 
 	return &protobuff.AddBookResponse{}, nil
 }
@@ -67,8 +67,9 @@ func (s *BookServer) EditBook(ctx context.Context, in *protobuff.EditBookRequest
 			Books = append(Books[:index], Books[index+1:]...)
 			res.Uid = book.GetUid()
 			Books = append(Books, res)
+
 			json := marshallBooks(Books)
-			redis.AddToRedisDB(fmt.Sprintf("%v", res.Uid), json)
+			redisdb.AddToRedisDB(fmt.Sprintf("%v", res.Uid), json)
 			return res, nil
 		}
 	}
@@ -87,7 +88,7 @@ func (s *BookServer) DeleteBook(ctx context.Context, in *protobuff.DeleteBookReq
 		}
 	}
 
-	redis.DeleteFromRedisDB(fmt.Sprintf("%v", in.Uid))
+	redisdb.DeleteFromRedisDB(fmt.Sprintf("%v", in.Uid))
 
 	return res, nil
 }
