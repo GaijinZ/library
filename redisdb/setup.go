@@ -2,16 +2,26 @@ package redisdb
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"net"
 
 	"github.com/go-redis/redis/v9"
 )
 
 func RedisSetup() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "192.168.1.55:6379",
-		Password: "",
-		DB:       0,
+		Dialer: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			conn, err := net.Dial("tcp", "192.168.1.55:6379")
+			if err != nil {
+				log.Printf("ERROR: fail init redis: %s", err.Error())
+				conn.Close()
+			}
+
+			return conn, err
+		},
+		MaxIdleConns:    80,
+		ConnMaxLifetime: 12000,
+		PoolSize:        100,
 	})
 
 	checkRedisConnection(rdb)
@@ -21,10 +31,9 @@ func RedisSetup() *redis.Client {
 
 func checkRedisConnection(rdb *redis.Client) {
 	pong, err := rdb.Ping(context.Background()).Result()
-
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error: %s", err)
 	}
 
-	fmt.Println(pong)
+	log.Print(pong)
 }
