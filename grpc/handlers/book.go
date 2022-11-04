@@ -43,7 +43,11 @@ func (b *BookServer) GetBook(ctx context.Context, in *protobuff.GetBookRequest) 
 	for _, book := range books {
 		if book.GetUid() == in.GetUid() {
 			log.Printf("Recived: %v", in.Uid)
-			redis.Get(fmt.Sprintf("%v", in.Uid))
+			get, err := redis.Get(fmt.Sprintf("%v", in.Uid))
+			if err != nil {
+				log.Println("could not get data", get)
+			}
+
 			return book, nil
 		}
 	}
@@ -56,7 +60,10 @@ func (b *BookServer) AddBook(ctx context.Context, in *protobuff.AddBookRequest) 
 	books = append(books, res)
 
 	json := marshallBooks(books)
-	redis.Set(fmt.Sprintf("%v", res.Uid), json)
+	set, err := redis.Set(fmt.Sprintf("%v", res.Uid), json)
+	if err != nil {
+		log.Println("could not set data", set)
+	}
 
 	return &protobuff.AddBookResponse{}, nil
 }
@@ -71,7 +78,11 @@ func (b *BookServer) EditBook(ctx context.Context, in *protobuff.EditBookRequest
 			books = append(books, res)
 
 			json := marshallBooks(books)
-			redis.Set(fmt.Sprintf("%v", res.Uid), json)
+			update, err := redis.Set(fmt.Sprintf("%v", res.Uid), json)
+			if err != nil {
+				log.Println("could not update data", update)
+			}
+
 			return res, nil
 		}
 	}
@@ -90,7 +101,10 @@ func (b *BookServer) DeleteBook(ctx context.Context, in *protobuff.DeleteBookReq
 		}
 	}
 
-	redis.Delete(fmt.Sprintf("%v", in.Uid))
+	del, err := redis.Delete(fmt.Sprintf("%v", in.Uid))
+	if err != nil {
+		log.Println("could not del data", del)
+	}
 
 	return res, nil
 }
