@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// set the grpc server up at given port
 func SetupGRPCServer(port string) {
 	flag.Parse()
 

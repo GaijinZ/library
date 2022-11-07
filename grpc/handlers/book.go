@@ -19,6 +19,7 @@ var books []*protobuff.Book
 var book redisdb.Books
 var redis redisdb.Redis = book
 
+// helper used to return the JSON from protobuff
 func marshallBooks(books []*protobuff.Book) []byte {
 	json, err := json.Marshal(books)
 
@@ -29,6 +30,7 @@ func marshallBooks(books []*protobuff.Book) []byte {
 	return json
 }
 
+// stream all books
 func (b *BookServer) GetAllBooks(in *protobuff.GetAllBooksRequest, stream protobuff.Library_GetAllBooksServer) error {
 	for _, book := range books {
 		if err := stream.Send(book); err != nil {
@@ -39,10 +41,10 @@ func (b *BookServer) GetAllBooks(in *protobuff.GetAllBooksRequest, stream protob
 	return nil
 }
 
+// get single book by uid from protobuff and redis db
 func (b *BookServer) GetBook(ctx context.Context, in *protobuff.GetBookRequest) (*protobuff.Book, error) {
 	for _, book := range books {
 		if book.GetUid() == in.GetUid() {
-			log.Printf("Recived: %v", in.Uid)
 			get, err := redis.Get(fmt.Sprintf("%v", in.Uid))
 			if err != nil {
 				log.Println("could not get data", get)
@@ -55,6 +57,7 @@ func (b *BookServer) GetBook(ctx context.Context, in *protobuff.GetBookRequest) 
 	return nil, errors.New("book not found")
 }
 
+// add a book to protobuff and redis db
 func (b *BookServer) AddBook(ctx context.Context, in *protobuff.AddBookRequest) (*protobuff.AddBookResponse, error) {
 	res := in.GetBook()
 	books = append(books, res)
@@ -68,6 +71,7 @@ func (b *BookServer) AddBook(ctx context.Context, in *protobuff.AddBookRequest) 
 	return &protobuff.AddBookResponse{}, nil
 }
 
+// update a book by uid in protobuff and redis db
 func (b *BookServer) EditBook(ctx context.Context, in *protobuff.EditBookRequest) (*protobuff.Book, error) {
 	res := in.GetBook()
 
@@ -90,6 +94,7 @@ func (b *BookServer) EditBook(ctx context.Context, in *protobuff.EditBookRequest
 	return res, nil
 }
 
+// delete a book from protobuff and redis db
 func (b *BookServer) DeleteBook(ctx context.Context, in *protobuff.DeleteBookRequest) (*protobuff.DeleteBookResponse, error) {
 	res := &protobuff.DeleteBookResponse{}
 

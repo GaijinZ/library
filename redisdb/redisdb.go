@@ -11,6 +11,7 @@ import (
 
 var RedisPool *redis.Client
 
+// interface to handle redis functions
 type Redis interface {
 	Set(uid string, books []byte) (bool, error)
 	Get(uid string) (string, error)
@@ -21,6 +22,7 @@ type Books struct{}
 
 var ctx = context.Background()
 
+// set the redis db up
 func RedisSetup() {
 	RedisPool = redis.NewClient(&redis.Options{
 		Dialer: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -37,6 +39,7 @@ func RedisSetup() {
 	checkRedisConnection(RedisPool)
 }
 
+// check the redis db connection is up
 func checkRedisConnection(rdb *redis.Client) {
 	pong, err := rdb.Ping(context.Background()).Result()
 	if err != nil {
@@ -47,6 +50,7 @@ func checkRedisConnection(rdb *redis.Client) {
 
 }
 
+// all function below are Redis interface functions to set, get and delete data from redis db
 func (b Books) Set(uid string, books []byte) (bool, error) {
 	err := RedisPool.Set(ctx, uid, books, 0).Err()
 	if err != nil {
