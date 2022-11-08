@@ -6,8 +6,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/GaijinZ/grpc/grpc/handlers"
-	"github.com/GaijinZ/grpc/protobuff"
+	"github.com/GaijinZ/grpc/pkg/grpc/handlers"
+	"github.com/GaijinZ/grpc/pkg/protobuff"
 
 	"google.golang.org/grpc"
 )

@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/GaijinZ/grpc/protobuff"
-	"github.com/GaijinZ/grpc/redisdb"
+	"github.com/GaijinZ/grpc/pkg/protobuff"
+	"github.com/GaijinZ/grpc/pkg/redisdb"
 )
 
 type BookServer struct {

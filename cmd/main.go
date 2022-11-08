@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/GaijinZ/grpc/grpc/server"
-	"github.com/GaijinZ/grpc/redisdb"
+	"github.com/GaijinZ/grpc/pkg/grpc/server"
+	"github.com/GaijinZ/grpc/pkg/redisdb"
 )
 
 func main() {
