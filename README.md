@@ -4,7 +4,7 @@
 * [Download image](#download-image)
 
 ## General info
-Library appis use to add, update, delete and view all books in Redis database.
+Library app is use to add, update, delete and view all books in Redis database.
 	
 ## Technologies
 Project is created with:
