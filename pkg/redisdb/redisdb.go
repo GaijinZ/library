@@ -26,7 +26,7 @@ var ctx = context.Background()
 func RedisSetup() {
 	RedisPool = redis.NewClient(&redis.Options{
 		Dialer: func(ctx context.Context, network, addr string) (net.Conn, error) {
-			conn, err := net.Dial("tcp", "192.168.1.55:6379")
+			conn, err := net.Dial("tcp", "redis:6379")
 			if err != nil {
 				log.Printf("ERROR: fail init redis: %s", err.Error())
 				conn.Close()

@@ -1,0 +1,39 @@
+version: "2.4"
+
+# networks:
+#   default: 
+#     name: booksnet
+#     external: true
+
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: userapi
+      POSTGRES_PASSWORD: userapi
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U" ,"userapi"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+  
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    ports:
+      - '6379:6379'
+    
+  booksapi:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build: /vagrant
+    container_name: booksapi
+    restart: always
+    ports: 
+      - 9500:9500

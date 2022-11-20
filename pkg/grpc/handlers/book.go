@@ -22,7 +22,6 @@ var redis redisdb.Redis = book
 // helper used to return the JSON from protobuff
 func marshallBooks(books []*protobuff.Book) []byte {
 	json, err := json.Marshal(books)
-
 	if err != nil {
 		log.Fatalf("Cant marshall books %v", err)
 	}
